@@ -1,0 +1,66 @@
+{
+  "scenario_id": "underutilized_service",
+  "description": "Underutilized and idle service reports-worker with 0 RPM, candidate for safe cost reduction via scale-down to min_instances.",
+  "service": {
+    "service_id": "reports-worker",
+    "cpu_percent": 9.0,
+    "memory_percent": 15.0,
+    "requests_per_minute": 0,
+    "latency_ms": 0.0,
+    "instances": 4,
+    "cost_per_hour": 11.0,
+    "min_instances": 1,
+    "max_instances": 6,
+    "max_latency_ms": 900.0,
+    "health": "healthy",
+    "healthy": true,
+    "timestamp": "2026-09-17T10:30:00Z"
+  },
+  "observation": {
+    "service_id": "reports-worker",
+    "cpu_utilization_percent": 9.0,
+    "memory_utilization_percent": 15.0,
+    "traffic_rpm": 0,
+    "latency_ms": 0.0,
+    "cost_per_hour": 11.0,
+    "observation_timestamp": "2026-09-17T10:30:00Z",
+    "state_version": "v1.0.0"
+  },
+  "expected_behavior": {
+    "is_underutilized": true,
+    "is_idle": true,
+    "safe_scale_down_possible": true,
+    "target_must_not_go_below_min_capacity": true,
+    "expected_action": "scale_down",
+    "current_instances": 4,
+    "expected_scale_down_target": 1,
+    "target_instances": 1,
+    "min_instances": 1,
+    "max_instances": 6,
+    "safety_check": {
+      "is_approved": true,
+      "rejection_reasons": [],
+      "applied_rules": [
+        "capacity_boundary_check",
+        "service_health_check",
+        "latency_headroom_check"
+      ]
+    },
+    "execution": {
+      "status": "success",
+      "resulting_instances": 1
+    },
+    "verification": {
+      "is_successful": true,
+      "state_confirmed": true,
+      "notes": "Verified: reports-worker safely scaled down from 4 to 1 instance without violating constraints."
+    },
+    "cost_impact": {
+      "cost_should_decrease": true,
+      "previous_cost_per_hour": 11.0,
+      "expected_cost_per_hour": 2.75,
+      "expected_savings_per_hour": 8.25
+    }
+  },
+  "expected_outcome": "Service reports-worker is safely scaled down from 4 to 1 instance. Safety allows the change, execution reduces instances to 1, verification confirms resulting state, and cost decreases."
+}

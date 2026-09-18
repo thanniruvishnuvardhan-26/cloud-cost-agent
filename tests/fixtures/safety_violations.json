@@ -1,0 +1,200 @@
+{
+  "collection_id": "safety_violations",
+  "description": "Deterministic collection of independent safety violation cases covering boundary, health, latency, freshness, schema integrity, and action validity.",
+  "violations": [
+    {
+      "scenario_name": "below_minimum_capacity",
+      "description": "Attempted scale-down below configured minimum instance capacity.",
+      "service": {
+        "service_id": "reports-worker",
+        "instances": 2,
+        "min_instances": 2,
+        "max_instances": 8,
+        "latency_ms": 10.0,
+        "max_latency_ms": 300.0,
+        "health": "healthy",
+        "healthy": true
+      },
+      "attempted_action": {
+        "action": "scale_down",
+        "target_instances": 1,
+        "current_instances": 2
+      },
+      "relevant_limits": {
+        "min_instances": 2,
+        "max_instances": 8
+      },
+      "expected_safety_result": "BLOCK",
+      "is_approved": false,
+      "rejection_reason": "Blocked: attempted target capacity (1) is below minimum capacity (2)."
+    },
+    {
+      "scenario_name": "above_maximum_capacity",
+      "description": "Attempted scale-up above configured maximum instance capacity.",
+      "service": {
+        "service_id": "orders-api",
+        "instances": 8,
+        "min_instances": 2,
+        "max_instances": 8,
+        "latency_ms": 250.0,
+        "max_latency_ms": 300.0,
+        "health": "healthy",
+        "healthy": true
+      },
+      "attempted_action": {
+        "action": "scale_up",
+        "target_instances": 9,
+        "current_instances": 8
+      },
+      "relevant_limits": {
+        "min_instances": 2,
+        "max_instances": 8
+      },
+      "expected_safety_result": "BLOCK",
+      "is_approved": false,
+      "rejection_reason": "Blocked: attempted target capacity (9) exceeds maximum capacity (8)."
+    },
+    {
+      "scenario_name": "latency_violation",
+      "description": "Attempted scale-down when service latency exceeds safe headroom or maximum allowed latency.",
+      "service": {
+        "service_id": "orders-api",
+        "instances": 4,
+        "min_instances": 2,
+        "max_instances": 8,
+        "latency_ms": 320.0,
+        "max_latency_ms": 300.0,
+        "health": "healthy",
+        "healthy": true
+      },
+      "attempted_action": {
+        "action": "scale_down",
+        "target_instances": 3,
+        "current_instances": 4
+      },
+      "relevant_limits": {
+        "current_latency_ms": 320.0,
+        "max_latency_ms": 300.0,
+        "max_safe_scale_down_latency_ms": 225.0
+      },
+      "expected_safety_result": "BLOCK",
+      "is_approved": false,
+      "rejection_reason": "Blocked: service latency (320.0ms) exceeds maximum latency (300.0ms); scale-down prohibited."
+    },
+    {
+      "scenario_name": "unhealthy_service",
+      "description": "Attempted infrastructure modification on an unhealthy service.",
+      "service": {
+        "service_id": "payment-api",
+        "instances": 3,
+        "min_instances": 2,
+        "max_instances": 8,
+        "latency_ms": 450.0,
+        "max_latency_ms": 300.0,
+        "health": "unhealthy",
+        "healthy": false
+      },
+      "attempted_action": {
+        "action": "scale_down",
+        "target_instances": 2,
+        "current_instances": 3
+      },
+      "relevant_limits": {
+        "required_health_state": "healthy"
+      },
+      "expected_safety_result": "BLOCK",
+      "is_approved": false,
+      "rejection_reason": "Blocked: service health is not confirmed (service is unhealthy)."
+    },
+    {
+      "scenario_name": "stale_data",
+      "description": "Action proposal based on observation whose timestamp or state version is outdated.",
+      "service": {
+        "service_id": "checkout-api",
+        "instances": 5,
+        "min_instances": 2,
+        "max_instances": 8,
+        "health": "healthy",
+        "healthy": true,
+        "observation_timestamp": "2026-09-17T08:00:00Z",
+        "current_timestamp": "2026-09-17T10:30:00Z",
+        "observation_version": "v1.0.0-0800",
+        "current_version": "v1.0.0-1030"
+      },
+      "attempted_action": {
+        "action": "scale_down",
+        "target_instances": 3,
+        "observation_version": "v1.0.0-0800"
+      },
+      "relevant_limits": {
+        "max_allowed_age_minutes": 15.0,
+        "actual_age_minutes": 150.0
+      },
+      "expected_safety_result": "BLOCK",
+      "is_approved": false,
+      "rejection_reason": "Blocked: proposal observation version v1.0.0-0800 does not match current state version v1.0.0-1030 (data is 150 minutes stale)."
+    },
+    {
+      "scenario_name": "missing_metric_data",
+      "description": "Service telemetry observation is missing mandatory metric fields (null or omitted).",
+      "service": {
+        "service_id": "inventory-api",
+        "instances": 3,
+        "min_instances": 1,
+        "max_instances": 6,
+        "cpu_percent": null,
+        "memory_percent": 35.0,
+        "requests_per_minute": 500,
+        "latency_ms": null,
+        "health": "healthy",
+        "healthy": true
+      },
+      "attempted_action": {
+        "action": "scale_down",
+        "target_instances": 2,
+        "current_instances": 3
+      },
+      "relevant_limits": {
+        "mandatory_fields": [
+          "cpu_percent",
+          "memory_percent",
+          "requests_per_minute",
+          "latency_ms"
+        ]
+      },
+      "expected_safety_result": "BLOCK",
+      "is_approved": false,
+      "rejection_reason": "Blocked: mandatory telemetry metrics (cpu_percent, latency_ms) are null or absent."
+    },
+    {
+      "scenario_name": "invalid_action",
+      "description": "Attempted infrastructure action is unrecognized or not supported by the system.",
+      "service": {
+        "service_id": "reports-worker",
+        "instances": 4,
+        "min_instances": 1,
+        "max_instances": 6,
+        "health": "healthy",
+        "healthy": true
+      },
+      "attempted_action": {
+        "action": "terminate_cluster",
+        "target_instances": 0,
+        "current_instances": 4
+      },
+      "relevant_limits": {
+        "supported_actions": [
+          "scale_up",
+          "scale_down",
+          "resize",
+          "stop_idle_service",
+          "delay_batch",
+          "no_action"
+        ]
+      },
+      "expected_safety_result": "BLOCK",
+      "is_approved": false,
+      "rejection_reason": "Blocked: action 'terminate_cluster' is not an allowed infrastructure action."
+    }
+  ]
+}

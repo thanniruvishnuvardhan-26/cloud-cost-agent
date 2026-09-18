@@ -1,0 +1,71 @@
+{
+  "scenario_id": "failed_action",
+  "description": "High-pressure service payment-api triggers a safety-valid scale_up from 3 to 5 instances, but the infrastructure execution fails with capacity_unavailable.",
+  "service": {
+    "service_id": "payment-api",
+    "cpu_percent": 91.0,
+    "memory_percent": 82.0,
+    "requests_per_minute": 6400,
+    "latency_ms": 410.0,
+    "instances": 3,
+    "cost_per_hour": 22.0,
+    "min_instances": 2,
+    "max_instances": 8,
+    "max_latency_ms": 300.0,
+    "health": "healthy",
+    "healthy": true,
+    "timestamp": "2026-09-17T10:30:00Z"
+  },
+  "observation": {
+    "service_id": "payment-api",
+    "cpu_utilization_percent": 91.0,
+    "memory_utilization_percent": 82.0,
+    "traffic_rpm": 6400,
+    "latency_ms": 410.0,
+    "cost_per_hour": 22.0,
+    "observation_timestamp": "2026-09-17T10:30:00Z",
+    "state_version": "v1.0.0"
+  },
+  "attempted_action": {
+    "action": "scale_up",
+    "target_service_id": "payment-api",
+    "requested_instances": 5,
+    "current_instances": 3,
+    "reason": "Capacity pressure and latency violation (CPU 91%, latency 410ms > max 300ms)."
+  },
+  "action_result": {
+    "action_id": "act-784",
+    "action": "scale_up",
+    "requested_instances": 5,
+    "status": "failed",
+    "error": "capacity_unavailable"
+  },
+  "expected_behavior": {
+    "has_capacity_problem": true,
+    "has_latency_problem": true,
+    "action_safety_valid": true,
+    "safety_check": {
+      "is_approved": true,
+      "rejection_reasons": [],
+      "applied_rules": [
+        "capacity_boundary_check",
+        "service_health_check"
+      ]
+    },
+    "execution_status": "failed",
+    "execution_error": "capacity_unavailable",
+    "must_not_report_success": true,
+    "verification": {
+      "is_successful": false,
+      "state_confirmed": false,
+      "falsely_claims_requested_state": false,
+      "actual_instances_remaining": 3,
+      "verification_notes": "Execution failed: capacity_unavailable. Instances remain at 3."
+    },
+    "audit_requirements": {
+      "error_visible_in_report": true,
+      "failure_logged": true
+    }
+  },
+  "expected_outcome": "Payment-api requires scale_up due to high load (CPU 91%, latency 410ms). The proposed scale_up to 5 instances is safety-valid, but execution fails due to capacity_unavailable. System must record failure, preserve instance count at 3, and not claim success."
+}

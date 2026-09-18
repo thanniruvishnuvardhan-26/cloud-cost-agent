@@ -1,0 +1,61 @@
+{
+  "scenario_id": "stale_observation",
+  "description": "Original observation for checkout-api recorded at 08:00 is stale compared to latest 10:30 telemetry showing traffic surge to 5200 RPM; requires freshness detection and data refresh.",
+  "service": {
+    "service_id": "checkout-api",
+    "cpu_percent": 24.0,
+    "memory_percent": 39.0,
+    "requests_per_minute": 900,
+    "latency_ms": 170.0,
+    "instances": 5,
+    "cost_per_hour": 20.0,
+    "min_instances": 2,
+    "max_instances": 8,
+    "max_latency_ms": 250.0,
+    "health": "healthy",
+    "healthy": true,
+    "timestamp": "2026-09-17T08:00:00Z"
+  },
+  "observation": {
+    "service_id": "checkout-api",
+    "cpu_utilization_percent": 24.0,
+    "memory_utilization_percent": 39.0,
+    "traffic_rpm": 900,
+    "latency_ms": 170.0,
+    "cost_per_hour": 20.0,
+    "observation_timestamp": "2026-09-17T08:00:00Z",
+    "state_version": "v1.0.0-0800"
+  },
+  "latest_traffic": {
+    "service_id": "checkout-api",
+    "requests_per_minute": 5200,
+    "timestamp": "2026-09-17T10:30:00Z",
+    "state_version": "v1.0.0-1030"
+  },
+  "staleness_details": {
+    "observation_time": "08:00",
+    "latest_traffic_time": "10:30",
+    "age_minutes": 150.0,
+    "max_allowed_age_minutes": 15.0,
+    "is_stale": true
+  },
+  "expected_behavior": {
+    "is_stale": true,
+    "staleness_detected": true,
+    "must_detect_outdated_before_action": true,
+    "action_permitted_on_stale_data": false,
+    "must_refresh_before_scaling_decision": true,
+    "safety_check": {
+      "is_approved": false,
+      "rejection_reasons": [
+        "Blocked: observation data version v1.0.0-0800 is stale relative to current version v1.0.0-1030 (age 150m exceeds freshness limit)."
+      ],
+      "applied_rules": [
+        "data_freshness_check"
+      ]
+    },
+    "scaling_result_encoded": "none",
+    "assume_scaling_success": false
+  },
+  "expected_outcome": "Observation from 08:00 is detected as stale relative to 10:30 traffic surge. System blocks consequential scaling actions and requires fresh observation data."
+}

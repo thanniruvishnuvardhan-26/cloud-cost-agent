@@ -1,0 +1,61 @@
+{
+  "scenario_id": "rising_traffic",
+  "description": "Rising traffic on orders-api with latency nearing maximum threshold; system must protect capacity and prevent incorrect scale-down.",
+  "service": {
+    "service_id": "orders-api",
+    "cpu_percent": 28.0,
+    "memory_percent": 48.0,
+    "requests_per_minute": 4200,
+    "latency_ms": 260.0,
+    "instances": 4,
+    "cost_per_hour": 18.5,
+    "min_instances": 2,
+    "max_instances": 8,
+    "max_latency_ms": 300.0,
+    "health": "healthy",
+    "healthy": true,
+    "timestamp": "2026-09-17T10:30:00Z"
+  },
+  "previous_state": {
+    "cpu_percent": 28.0,
+    "memory_percent": 48.0,
+    "requests_per_minute": 2100,
+    "instances": 4
+  },
+  "observation": {
+    "service_id": "orders-api",
+    "cpu_utilization_percent": 28.0,
+    "memory_utilization_percent": 48.0,
+    "traffic_rpm": 4200,
+    "latency_ms": 260.0,
+    "cost_per_hour": 18.5,
+    "observation_timestamp": "2026-09-17T10:30:00Z",
+    "state_version": "v1.0.0"
+  },
+  "expected_behavior": {
+    "traffic_increased_significantly": true,
+    "previous_traffic_rpm": 2100,
+    "current_traffic_rpm": 4200,
+    "traffic_multiplier": 2.0,
+    "must_not_scale_down": true,
+    "prohibited_actions": [
+      "scale_down"
+    ],
+    "acceptable_actions": [
+      "scale_up",
+      "no_action"
+    ],
+    "constraints": {
+      "min_instances": 2,
+      "max_instances": 8,
+      "max_latency_ms": 300.0,
+      "current_latency_ms": 260.0
+    },
+    "safety_requirements": {
+      "reject_scale_down": true,
+      "enforce_capacity_boundaries": true,
+      "enforce_latency_ceiling": true
+    }
+  },
+  "expected_outcome": "Traffic doubled to 4200 RPM while latency reached 260ms (close to 300ms ceiling). System must not scale down; policy allows conservative no_action or safe scale_up respecting 2-8 instance limits."
+}
